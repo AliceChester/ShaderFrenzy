@@ -13,11 +13,14 @@ in vec4 eyeVector;
 in vec4 lightVector;
 in vec4 vertColor;
 in vec3 vertNormal;
+in vec2 textCoords;
 
 out vec4 fragColor;
 
 void main( void )
 {
-    // Here begins the real work.
-    fragColor = vertColor;
+
+
+    vec4 textColor = texture2D(earthDay, textCoords);
+    fragColor = textColor;
 }
