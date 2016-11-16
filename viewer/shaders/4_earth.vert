@@ -14,7 +14,7 @@ out vec4 eyeVector;
 out vec4 lightVector;
 out vec4 vertColor;
 out vec3 vertNormal;
-out vec2 textCoords;
+out vec4 position;
 
 void main( void )
 {
@@ -29,12 +29,8 @@ void main( void )
     eyeVector = normalize(eyePosition - vertPosition);
 
 
-    vertNormal = normalize(normalMatrix * normal);
+    vertNormal = normal;
     gl_Position = perspective * matrix * vec4(vertex, 1.0);
+    position = vec4(vertex, 1.0);
 
-
-    vec4 d = normalize( vec4(vertex, 1.0));
-    float u = 0.5 + atan(d.z,d.x)/(2*M_PI);
-    float v = 0.5 - asin(d.y)/M_PI;
-    textCoords = vec2(u,v);
 }
