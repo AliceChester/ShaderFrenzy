@@ -908,8 +908,10 @@ void glShaderWindow::render()
         // set up camera position in light source:
         // TODO_TP3: you must initialize these two matrices.
         lightCoordMatrix.setToIdentity();
+        lightCoordMatrix.lookAt(*new QVector3D(0,0,0), lightPosition, *new QVector3D(0,0,1));
         // lightCoordMatrix = ...
         lightPerspective.setToIdentity();
+        lightPerspective.perspective(*new qreal(0.5),* new qreal(0.5),*new qreal(1), *new qreal(20));
         // lightPerspective = ...
         shadowMapGenerationProgram->setUniformValue("matrix", lightCoordMatrix);
         shadowMapGenerationProgram->setUniformValue("perspective", lightPerspective);
@@ -932,7 +934,7 @@ void glShaderWindow::render()
         QOpenGLTexture* sm = new QOpenGLTexture(QImage(debugPix));
         sm->bind(shadowMap->texture());
         sm->setWrapMode(QOpenGLTexture::ClampToEdge);
-        // debugPix.save("debug.png");
+         debugPix.save("debug.png");
 #endif
         glClearColor( 0.2f, 0.2f, 0.2f, 1.0f );
         glEnable(GL_CULL_FACE);

@@ -53,11 +53,21 @@ THE SOFTWARE.
 uniform sampler2D permTexture;
 uniform float radius; // object size.
 
+
+
+uniform float lightIntensity;
+uniform bool blinnPhong;
+uniform float shininess;
+uniform float eta;
+
+
 /*
  * Both 2D and 3D texture coordinates are defined, for testing purposes.
  */
 in vec3 vertPos;
-in vec4 vertColor;
+in vec4 eyeVector;
+in vec4 lightVector;
+in vec3 vertNormal;
 
 out vec4 fragColor;
 
@@ -226,5 +236,95 @@ vec3 perlinNoise(in vec3 v) {
 
 void main( void )
 {
-  fragColor = vertColor * vec4(0.5 + 0.5 * perlinNoise(vertPos.xyz/radius), 1.0);
+vec4 vertColor;
+vec4 g1 =vec4(0.12,0.57,0.40,1.0);
+vec4 g2 = vec4(0.48,0.78,0.62,1.0);
+vec4 g3 = vec4(0.11,0.53,0.4,1.0);
+vec4 g4 = vec4(0.15,0.54,0.43,1.0);
+vec4 g5 = vec4(0.19,0.54,0.40,1.0);
+    //perlinNoise jade texture
+       /* vec3 perlin = perlinNoise(vertPos.xyz/radius);
+        if(perlin.x < -0.5)
+        {
+            float coef = (perlin.x +1) *2;
+            vertColor = mix(g1,g3, coef);
+        }
+        else if(perlin.x < -0.1)
+        {
+            float coef = (perlin.x +0.5) *2.5;
+            vertColor = mix(g3,g4, coef);
+        }
+        else if(perlin.x < -0.0)
+        {
+            float coef = (perlin.x +0.1) *10;
+            vertColor = mix(g4,g2, coef);
+        }
+       else if(perlin.x < 0.1)
+        {
+            float coef = (perlin.x) *10;
+            vertColor = mix(g2,g4, coef);
+        }
+       else if(perlin.x < 0.5)
+        {
+            float coef = (perlin.x -0.1) *2.5;
+            vertColor = mix(g4,g5, coef);
+        }
+        else
+        {
+            float coef = (perlin.x -0.5) *2;
+            vertColor = mix(g5,g1, coef);
+        }*/
+
+
+//wood texture1D
+vec4 w1 =vec4(0.23,0.18,0.1,1.0);
+vec4 w2 =vec4(0.70,0.56,0.38,1.0);
+vec4 w3 =vec4(0.61,0.49,0.32,1.0);
+       vec3 line = vec3(40.0,0.0,40.0);
+       float distance = fract(length(line - vec3(vertPos.x,0.0,vertPos.z))+eta*perlinNoise(vertPos/radius));
+       if(distance < 0.5)
+       {
+           float coef = ( distance )*2 ;
+           vertColor = w1; //mix(g1,g2, coef);
+       }
+       else if(distance< 0.7)
+       {
+           float coef = (distance -0.5) *5;
+           vertColor = w2; //mix(g2,g3, coef);
+       }
+       else
+       {
+           float coef = (distance -0.7) *3.3;
+           vertColor = w3; //mix(g3,g4, coef);
+       }
+
+    float ambiantReflection = 0.2;
+    float diffuseReflection = 0.6;
+    float specularReflection = 0.6;
+
+    vec4 normal = vec4(vertNormal, 1.0);
+
+    vec4 ambient = ambiantReflection * vertColor * lightIntensity;
+    vec4 diffuse = diffuseReflection*vertColor*max(dot(normal,lightVector),0)*lightIntensity;
+    vec4 specular;
+
+    vec4 halfVector = (eyeVector + lightVector)/ length(eyeVector + lightVector);
+    vec4 reflectedVector = 2 * (dot(normal,lightVector))* normal - lightVector;
+
+    if(blinnPhong)
+    {
+        specular = specularReflection*vertColor*pow(max(dot(halfVector,normal),0),4*shininess)*lightIntensity;
+    }
+    else
+    {
+       specular = specularReflection*vertColor*pow(max(dot(reflectedVector,eyeVector),0),shininess)*lightIntensity;
+    }
+
+    //Fresnel Coefficient
+    float fo = pow(1 - eta,2) /  pow(1 + eta,2);
+    float f = fo + (1- fo) * pow(1 - dot(halfVector, eyeVector),5);
+    specular = specular * f;
+
+fragColor = ambient + diffuse + specular;
+  //fragColor = vertColor * vec4(0.5 + 0.5 * perlinNoise(vertPos.xyz/radius), 1.0);
 }
